@@ -211,7 +211,7 @@ async function main(){
 
   createPanel();
 
-  //await syncUI();
+  await syncUI();
 
 
   // Enable web egine

@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PWA Demo</title>
+    <link rel="stylesheet" href="kiosk.css">    
+    <script type="text/javascript" src="kiosk.js"></script>
+  </head>
+
+  <body>		
+    <div class="container">
+      <iframe id="mainFrame" frameborder="0" allowfullscreen></iframe>
+      <div id='controls'>
+        <button type="button" class="button" onclick="openModal();">Exit</button>        
+        <button type="button" class="button" onclick="window.location.reload();">Reload</button> 
+      </div>
+      <div class="error" id="error">
+        <h1>
+          Unable to connect to room system
+        </h1>
+      </div>
+      <div id="modal">
+        <div class="modal-content">
+          <h1>
+             Warning
+          </h1>
+          <h2>
+            Are you sure you want</br>
+            to exit kiosk mode?
+          </h2>          
+          <button type="button" class="modalButton" onclick="exitKiosk();">Confirm</button>
+          <button type="button" class="modalButton" onclick="closeModal();">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

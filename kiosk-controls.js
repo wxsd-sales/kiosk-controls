@@ -37,26 +37,49 @@ const KIOSK_URLS = [
 
 ////// Do not touch /////
 
-
-
-async function doNotDisturb(event) {
+async function brightnessChange(event) {
 
   const state = await xapi.Config.UserInterface.Kiosk.Mode.get();
 
-  if(state == 'On' && event == 'Active') {
+  if(state == 'On' && event == 'Manual') {
     console.log('Disabling Kiosk Mode')
     xapi.Config.UserInterface.Kiosk.Mode.set('Off');
   }
 
 }
 
-function toggleKiosk(value){
+function monitorMessage(event) {
 
-  console.log('Kiosk Mode currently disabled, now enabling');
-  xapi.Config.UserInterface.Kiosk.Mode.set( value ? 'On' : 'Off');
-  xapi.Config.WebEngine.Mode.set('On');
+  if(event.Text == 'ExitKiosk'){
+    console.log('Closing Kiosk');
+    toggleKiosk(false);
+  }
+
+}
+
+async function toggleKiosk(state){
+
+  if(!state) {
+    xapi.Config.UserInterface.Kiosk.Mode.set('Off');
+  } else {
+    const currentURL = await xapi.Config.UserInterface.Kiosk.URL.get();
+
+    if(currentURL == ''){
+      console.log('No Kiosk URL set, warning user');
+      warnUser();
+    } else {
+      console.log('No Kiosk URL set, warning user');
+      xapi.Config.UserInterface.Kiosk.Mode.set('On');
+    }
+
+  }
+
   syncUI();
 
+}
+
+function forceEnable() {
+  xapi.Config.UserInterface.Kiosk.Mode.set('On');
 }
 
 async function createURL(site){
@@ -70,9 +93,15 @@ async function createURL(site){
   const iframe = site.iFrame != null ? `iframe=${site.iFrame}&` : '';
   const device = site.Device ? `device=${deviceId}` : '';
 
-  link = `${site.URL}?${bot}${device}${iframe}`;
+  const paremters = `${bot}${device}${iframe}`;
 
-  console.log('Generated URL: ' + link);
+  if (paremters === ''){
+    link = site.URL;
+  } else {
+    link = `${site.URL}?${bot}${device}${iframe}`;
+  }
+
+  //console.log('Generated URL: ' + link);
 
   return link;
 
@@ -98,8 +127,11 @@ function contains(a, b) {
   return (a.indexOf(b) != -1)
 }
 
-function compareURL(current, site) {
-  if(contains(current, createURL(site))) {
+async function compareURL(current, site) {
+
+  const url = await createURL(site)
+ 
+  if(contains(current, url)) {
     return true;
   }
   return false;
@@ -114,16 +146,18 @@ async function syncUI() {
   const currentURL = await xapi.Config.UserInterface.Kiosk.URL.get();
 
   // Update the Site select panel
-  KIOSK_URLS.forEach( (site, i) => {
+  KIOSK_URLS.forEach( async (site, i) => {
+
+    const match = await compareURL(currentURL, site);
 
     xapi.Command.UserInterface.Extensions.Widget.SetValue({
         WidgetId: 'kiosk_site_'+i,
-        Value: (compareURL(currentURL, site)) ? 'on' : 'off',
+        Value: match ? 'on' : 'off',
       });
 
   });
 
-  const kioskState = await xapi.Config.UserInterface.Kiosk.URL.get();
+  const kioskState = await xapi.Config.UserInterface.Kiosk.Mode.get();
 
   xapi.Command.UserInterface.Extensions.Widget.SetValue({
     WidgetId: 'kiosk_toggle',
@@ -134,14 +168,12 @@ async function syncUI() {
 
 function widgetEvent(event){
 
-  console.log(event);
-
   if (event.WidgetId == 'kiosk_toggle') {
     toggleKiosk(event.Value === 'on');
   } else if (event.WidgetId.startsWith('kiosk_site_')){
     setKioskURL(event.WidgetId)
   }
- 
+
 }
 
 
@@ -180,7 +212,6 @@ async function createPanel() {
       <Page>
         <Name>Site Select</Name>
         ${sites}
-        <Options/>
       </Page>
       <Page>
         <Name>Kiosk Mode</Name>
@@ -227,11 +258,14 @@ async function main(){
   // Listen for all toggle events
   xapi.Event.UserInterface.Extensions.Widget.Action.on(widgetEvent);
 
-  // Monitor URL changes
-  //xapi.Config.UserInterface.HomeScreen.Peripherals.WebApp.URL.on(syncUI);
+  // Listen to messages from cloud xapi
+  xapi.Event.Message.Send.on(monitorMessage);
+
+  // Monitor Kiosk changes to update the UI
+  xapi.Config.UserInterface.Kiosk.Mode.on(syncUI)
 
   if(ALLOW_EXIT) {
-    xapi.Status.Conference.DoNotDisturb.on(doNotDisturb);
+    xapi.Config.Video.Output.Connector.BrightnessMode.on(brightnessChange);
   }
 
 }

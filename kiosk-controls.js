@@ -20,18 +20,18 @@ const DISABLE_ASSISTANT = false;
 
 const DISABLE_ULTRASOUND = false;
 
-const BUTTON_NAME = 'Kiosk Control';
+const BUTTON_NAME = 'Kiosk Controls';
 
 const KIOSK_URLS = [
   {
-    "Text" : 'iFrame Example and Bot',
+    "Text" : 'Company Dashboard',
     "URL" : 'https://www.example.com',
     "iFrame" : 'https://www.exampleiframe.com',
     "Bot": true 
   },
   {
-    "Text" : 'Simple Page',
-    "URL" : 'https://www.google.com',
+    "Text" : 'Check In',
+    "URL" : 'https://www.example2.com',
   } 
 ];
 

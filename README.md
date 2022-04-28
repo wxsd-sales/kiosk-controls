@@ -1,5 +1,5 @@
 # Kiosk Controls
-This is a Kiosk Mode control macro which lets you select between differen preconfigure URLs and also enable Kiosk mode for the device. Additional, it allows you to exit Kiosk mode in two ways.
+This is a Kiosk control macro which enables a user to select between different preconfigured URLs and toggle Kiosk mode on a Webex Device needing admin access. This is useful in situations where an admin would like to delegate the selection of Kiosk Web Apps to local staff.
 
 ## Open the Kiosk Control panel
 ![image](https://user-images.githubusercontent.com/21026209/165599603-615b9053-adff-4a81-850d-d63ec538ff06.png)

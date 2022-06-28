@@ -125,7 +125,7 @@ async function speakerTrack(event) {
 
   const state = getKioskMode();
 
-  if(state == 'On' && event == 'Manual') {
+  if(state == 'On' && event == 'Inactive') {
     console.log('Disabling Kiosk Mode')
     setKioskMode('Off');
   }

@@ -25,7 +25,7 @@ If the Webex Device is in shared mode, you can give API access to it via Control
 
 ## Requirements
 
-1. RoomOS 10.14.x or above Webex Device.
+1. RoomOS 10.14.x ( with RoomOS 11 Enabled ) or above Webex Device.
 2. Web admin access to the device to uplaod the macro.
 3. Admin access token if you wish to use Cloud xAPI
 

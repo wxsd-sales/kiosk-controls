@@ -1,9 +1,8 @@
 # Kiosk Controls
-This is a Kiosk control macro which enables a user to select between different preconfigured URLs and toggle Kiosk mode on a Webex Device needing admin access. This is useful in situations where an admin would like to delegate the selection of Kiosk Web Apps to local staff.
+This is a Kiosk control macro which enables a user to select between different preconfigured URLs and enable/disable Kiosk mode on a Webex Device. This is useful in situations where an admin would like to delegate the selection of Kiosk Web Apps to local staff and also allow them to exit Kiosk mode and use the device for normal calling funtions.
 
 ## Open the Kiosk Control panel
 ![image](https://user-images.githubusercontent.com/21026209/165599603-615b9053-adff-4a81-850d-d63ec538ff06.png)
-
 
 ## Select between preset URLs
 ![image](https://user-images.githubusercontent.com/21026209/165597255-d26ab4a3-a72a-4a5f-bea6-c2bf28d701bc.png)
@@ -20,8 +19,8 @@ If you have a Touch 10 or Webex Room Navigator paired with your Webex Device in 
 ### Using the SpeakerTrack Toggle
 The Macro can exit Kiosk mode by monitoring for setting change events. In this case the Macro monitors the Camera SpeakerTrack feature. You can access the settings menu by tapping the screen three times with three fingers. Then by navigating to the camera settings and disabling SpeakerTrack, the Macro will exit Kiosk Mode for you.
 
-### Using a Cloud xAPI command via an Access Token
-You can also use Cloud xAPI commands to exit Kiosk mode from your Kiosk web app. The Macro listens for the keyword 'ExistKiosk' which can be sent to the device using Message Send xAPI. More information on this Cloud xAPI command can be found here: https://roomos.cisco.com/xapi/Command.Message.Send/
+### Using a Cloud xAPI command
+You can also use Cloud xAPI commands to exit Kiosk mode from your Kiosk web app. The Macro listens for the keyword 'ExistKiosk' which can be sent to the device using Message Send xAPI. This will require your Web App or its backend to use an access token. More information on this Cloud xAPI command can be found here: https://roomos.cisco.com/xapi/Command.Message.Send/
 
 ## Requirements
 

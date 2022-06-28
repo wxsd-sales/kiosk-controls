@@ -14,14 +14,14 @@ This is a Kiosk control macro which enables a user to select between different p
 
 ## Exit Kiosk mode
 
-### Using the Auto Brightness toggle
-The Macro can be configured to exit Kiosk mode by adding the settings menu and setting the Auto Brightness to manual.
-To access the settings menu, tap the screen three times with three fingers.
+### Using the Macro UI Panel
+If you have a Touch 10 or Webex Room Navigator paired with your Webex Device in controller mode. The Macros UI panel will be alway be accessible even when Kiosk Mode is available. This easily allows your to exit Kiosk Mode by toggling the feature off using the panels UI.
 
-![image](https://user-images.githubusercontent.com/21026209/165740535-4098be95-d044-4740-b7da-a950eb8caa9c.png)
+### Using the SpeakerTrack Toggle
+The Macro can exit Kiosk mode by monitoring for setting change events. In this case the Macro monitors the Camera SpeakerTrack feature. You can access the settings menu by tapping the screen three times with three fingers. Then by navigating to the camera settings and disabling SpeakerTrack, the Macro will exit Kiosk Mode for you.
 
 ### Using a Cloud xAPI command via an Access Token
-If the Webex Device is in shared mode, you can give API access to it via Control Hub. With a Bot or User access token, you can use this macro to disable kiosk mode from within your Web App.
+You can also use Cloud xAPI commands to exit Kiosk mode from your Kiosk web app. The Macro listens for the keyword 'ExistKiosk' which can be sent to the device using Message Send xAPI. More information on this Cloud xAPI command can be found here: https://roomos.cisco.com/xapi/Command.Message.Send/
 
 ## Requirements
 
@@ -37,5 +37,5 @@ If the Webex Device is in shared mode, you can give API access to it via Control
 
 ## Support
 
-Please reach out to the WXSD team at [wxsd@external.cisco.com](mailto:wxsd@external.cisco.com?cc=wimills@cisco.com&subject=kiosk-controls)
-or contact me on Webex (wimills@cisco.com).
+Please reach out to the WXSD team at [wxsd@external.cisco.com](mailto:wxsd@external.cisco.com?subject=kiosk-controls)
+

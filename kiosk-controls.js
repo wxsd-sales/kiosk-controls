@@ -20,11 +20,10 @@ or implied.
  * Version: 1-0-0
  * Released: 04/28/22
  * 
- * This Webex Device Kiosk Macro is meant to be run in conjuntion
- * with a web app which recevies a Device ID and Bot Token as URL parameters.
- * The web app can then uses this information to make Cloud xAPI commands.
- * eg. https://www.example.com/?device=12345&token12345
- * 
+ * This Webex Device Kiosk Macro makes it easy to select between
+ * present Kiosk URLs and toggle Kiosk Mode on or off. See the 
+ * GitHub repro for this Macro for further details on how it works
+ * https://github.com/wxsd-sales/kiosk-controls
  * 
  ********************************************************/
 
@@ -111,11 +110,12 @@ async function main(){
 
 }
 
+// Run our main function
 main();
 
 
 /*********************************************************
- * Below the function which this macro uses
+ * Below are the function which this macro uses
 **********************************************************/
 
 // This function is called when speakerTrack is enable/disable

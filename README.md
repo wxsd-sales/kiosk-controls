@@ -24,9 +24,11 @@ You can also use Cloud xAPI commands to exit Kiosk mode from your Kiosk web app.
 
 ## Requirements
 
-1. RoomOS 10.14.x ( with RoomOS 11 Enabled ) or above Webex Device.
+1. RoomOS 10.14.x ( with RoomOS 11 Enabled ) or above Webex Desk and Board Series Device.
+   * Kiosk mode is not supported on Desk Hub, DX70, or DX80.
 2. Web admin access to the device to uplaod the macro.
 3. Admin access token if you wish to use Cloud xAPI
+
 
 ## Setup
 

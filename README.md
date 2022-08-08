@@ -20,7 +20,8 @@ If you have a Touch 10 or Webex Room Navigator paired with your Webex Device in 
 The Macro can exit Kiosk mode by monitoring for setting change events. In this case the Macro monitors the Camera SpeakerTrack feature. You can access the settings menu by tapping the screen three times with three fingers. Then by navigating to the camera settings and disabling SpeakerTrack, the Macro will exit Kiosk Mode for you.
 
 ### Using a Cloud xAPI command
-You can also use Cloud xAPI commands to exit Kiosk mode from your Kiosk web app. The Macro listens for the keyword 'ExistKiosk' which can be sent to the device using Message Send xAPI. This will require your Web App or its backend to use an access token. More information on this Cloud xAPI command can be found here: https://roomos.cisco.com/xapi/Command.Message.Send/
+You can also use Cloud xAPI commands to exit Kiosk mode from your Kiosk web app. The setting to do so is a configuration rather than a command. As such, a Bot Access Token with API Access wouldn't have the scope to make the configuration change (an Device Admin access token would be required) Therefore the Macro listens for the keywords 'ExistKiosk' or 'EnterKiosk' and makes the configuration change instead. This can be sent from your Web App or its backend via the Cloud xAPI. More information on this Cloud xAPI command can be found here: https://roomos.cisco.com/xapi/Command.Message.Send/
+
 
 ## Requirements
 

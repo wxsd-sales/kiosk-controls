@@ -20,10 +20,14 @@ or implied.
  * Version: 1-0-0
  * Released: 04/28/22
  * 
- * This Webex Device Kiosk Macro makes it easy to select between
- * present Kiosk URLs and toggle Kiosk Mode on or off. See the 
- * GitHub repro for this Macro for further details on how it works
- * https://github.com/wxsd-sales/kiosk-controls
+ * This macro gives you the ability to enable kiosk mode from the touch inteface
+ * of your your Webex Devices. If you have a paired Touch 10 or Webex Navigator
+ * you can even exit kiosk mode with the macro. It also lets your select between
+ * preset Kiosk URLs fromt he macros UI panel.
+ * 
+ * Lastly, the macro also allows you to toggle kiosk mode by sending the special
+ * keywords ExistKiosk or EnterKiosk to the device via the Message Send xAPI 
+ * command. This can be done from your Web App or its backend.
  * 
  ********************************************************/
 

@@ -23,20 +23,21 @@ The Macro can exit Kiosk mode by monitoring for setting change events. In this c
 You can also use Cloud xAPI commands to exit Kiosk mode from your Kiosk web app. The setting to do so is a configuration rather than a command. As such, a Bot Access Token with API Access wouldn't have the scope to make the configuration change (an Device Admin access token would be required) Therefore the Macro listens for the keywords 'ExistKiosk' or 'EnterKiosk' and makes the configuration change instead. This can be sent from your Web App or its backend via the Cloud xAPI. More information on this Cloud xAPI command can be found here: https://roomos.cisco.com/xapi/Command.Message.Send/
 
 
-## Requirements
-
-1. RoomOS 10.14.x ( with RoomOS 11 Enabled ) or above Webex Desk and Board Series Device.
-   * Kiosk mode is not supported on Desk Hub, DX70, or DX80.
-2. Web admin access to the device to uplaod the macro.
-3. Admin access token if you wish to use Cloud xAPI
-
-
 ## Setup
 
+### Prerequisites & Dependencies: 
+
+- Webex Desk or Board Series Device running RoomOS 11 or above
+    - *Kiosk mode is not supported on Webex Room Series, Desk Hub, DX70, or DX80*
+- Web admin access to the device to uplaod the macro
+- Admin access token if you wish to use Cloud xAPI
+
+
+### Installation Steps:
 1. Download the ``kiosk-controls.js`` file and upload it to your Webex Room devices Macro editor via the web interface.
 2. Configure the Macro by changing the initial values, there are comments explaining each one.
 3. Enable the Macro on the editor.
-
+  
 
 ## Demo
 

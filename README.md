@@ -11,23 +11,20 @@ This is a Kiosk control macro which enables a user to select between different p
 ![image](https://user-images.githubusercontent.com/21026209/165599494-3d00b9d5-987e-4173-8052-bbb4d03557ec.png)
 
 
-## Exit Kiosk mode
+## Exiting Kiosk Mode options
 
 ### Using the Macro UI Panel
 If you have a Touch 10 or Webex Room Navigator paired with your Webex Device in controller mode. The Macros UI panel will be always be accessible even when Kiosk Mode is available. This easily allows your to exit Kiosk Mode by toggling the feature off using the panels UI.
 
-### Using the SpeakerTrack Toggle
-The Macro can exit Kiosk mode by monitoring for setting change events. In this case the Macro monitors the Camera SpeakerTrack feature. You can access the settings menu by tapping the screen three times with three fingers. Then by navigating to the camera settings and disabling SpeakerTrack, the Macro will exit Kiosk Mode for you.
-
-### Using a Cloud xAPI command
-You can also use Cloud xAPI commands to exit Kiosk mode from your Kiosk web app. The setting to do so is a configuration rather than a command. As such, a Bot Access Token with API Access wouldn't have the scope to make the configuration change (an Device Admin access token would be required) Therefore the Macro listens for the keywords 'ExistKiosk' or 'EnterKiosk' and makes the configuration change instead. This can be sent from your Web App or its backend via the Cloud xAPI. More information on this Cloud xAPI command can be found here: https://roomos.cisco.com/xapi/Command.Message.Send/
+### Using the Kiosk Web App
+It is possible for the Kiosk Web App to connect to the Desk or Board device in which it is running on and disable Kiosk mode. This example Web App demonstrates how to do this: https://github.com/wxsd-sales/exit-kiosk-web-app
 
 
 ## Setup
 
 ### Prerequisites & Dependencies: 
 
-- Webex Desk or Board Series Device running RoomOS 11 or above
+- Webex Desk or Board Series Device running RoomOS 11.8 or above
     - *Kiosk mode is not supported on Webex Room Series, Desk Hub, DX70, or DX80*
 - Web admin access to the device to uplaod the macro
 - Admin access token if you wish to use Cloud xAPI

@@ -102,8 +102,9 @@ async function main() {
   // Monitor the response to the warning prompt when no URL is set
   xapi.Event.UserInterface.Message.Prompt.Response.on(warningResponse);
 
-  xapi.Status.Standby.State.on(state => {
+  xapi.Status.Standby.State.on(async state => {
     console.log('Standby State Changed to: ', state)
+    if(await kioskEnabled()) return; // Take no action if kiosk mode is already enabled.
     if (state === 'EnteringStandby') {
       if (config.autoCleanupOnStandby) performRoomClean();
       if (config.autoEnableKioskOnStandby) setKioskMode('On')
@@ -131,7 +132,6 @@ async function main() {
 
 }
 
-// Run our main function
 main();
 
 

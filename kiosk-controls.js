@@ -24,10 +24,6 @@
 
 import xapi from 'xapi';
 
-xapi.Status.Diagnostics.Message.get()
-.then(result=>console.log(JSON.stringify(result)))
-
-
 /*********************************************************
  * Configure the settings below
 **********************************************************/
@@ -51,17 +47,17 @@ const config = {
   disableSettings: false,
   disableAssistant: true,
   disableUltrasound: true,
-  autoCleanup: true,
-  autoEnableKiosk: true,
+  autoCleanupOnStandby: true,  // Clear web cache when entering standby
+  autoCleanupOnHalfwake: true, // Clear web cache when entering halfwake
+  autoEnableKioskOnStandby: true,
+  autoEnableKioskOnHalfwake: true,
+  autoDisableStandby: true,
   panelId: 'kioskcontrols'
 }
-
-
 
 /*********************************************************
  * Do not change below
 **********************************************************/
-
 
 // This is our main function which initializes everything
 async function main() {
@@ -106,38 +102,32 @@ async function main() {
   // Monitor the response to the warning prompt when no URL is set
   xapi.Event.UserInterface.Message.Prompt.Response.on(warningResponse);
 
-  xapi.Event.UserInterface.Extensions.Event.PageOpened
-    .on(value => console.log('Page Opened', value));
+  xapi.Status.Standby.State.on(state => {
+    console.log('Standby State Changed to: ', state)
+    if (state === 'EnteringStandby') {
+      if (config.autoCleanupOnStandby) performRoomClean();
+      if (config.autoEnableKioskOnStandby) setKioskMode('On')
+      if (config.autoDisableStandby) setStandbyControl('Off')
+    }
 
-  xapi.Event.UserInterface.Extensions.Event.PageClosed
-    .on(value => console.log('Page Closed', value));
+    if (state === 'Halfwake') {
+      if (config.autoCleanupOnHalfwake) performRoomClean();
+      if (config.autoEnableKioskOnHalfwake) setKioskMode('On')
+      if (config.autoDisableStandby) setStandbyControl('Off')
+    }
 
-  if (config.autoCleanup) {
+  });
 
-    xapi.Status.Standby.State.on(state => {
-      console.log('Standby State Changed to: ', state)
-
-      if (state != 'Standby') return;
-
-      console.log('Performing Room Clean Up')
-      xapi.Command.RoomCleanup.Run({ ContentType: ['TemporaryAccounts', 'Whiteboards', 'WebData'] });
-
-      if (config.autoEnableKiosk) {
-
-        xapi.Config.UserInterface.Kiosk.Mode.set('On');
-      }
-    });
-  }
 
   xapi.Event.RoomCleanup.Complete.on(value => {
     console.log('Cleanup result', value)
   });
 
   xapi.Event.Standby.SecondsToStandby
-    .on(value => console.log('Seconds to Standby:',value));
+    .on(value => console.log('Seconds to Standby:', value));
 
-    xapi.Event.Standby.Reset
-    .on(value => console.log('Standby Reset Event',value));
+  xapi.Event.Standby.Reset
+    .on(value => console.log('Standby Reset Event', value));
 
 }
 
@@ -154,9 +144,20 @@ function kioskEnabled() {
   return xapi.Config.UserInterface.Kiosk.Mode.get().then(result => result === 'On')
 }
 
-async function setKioskMode(mode) {
-  console.log('Setting Kiosk Mode: ', mode);
+function setKioskMode(mode) {
+  console.log('Setting Kiosk Mode to: ', mode);
   xapi.Config.UserInterface.Kiosk.Mode.set(mode);
+}
+
+function setStandbyControl(mode) {
+  console.log('Setting Standby Control to: ', mode);
+  xapi.Config.Standby.Control.set(mode);
+  if (mode === 'Off') xapi.Command.Standby.Deactivate();
+}
+
+function performRoomClean() {
+  console.log('Performing Room Cleanup');
+  xapi.Command.RoomCleanup.Run({ ContentType: ['TemporaryAccounts', 'Whiteboards', 'WebData'] });
 }
 
 async function getKioskUrl() {
@@ -252,7 +253,7 @@ async function syncUI() {
     xapi.Command.UserInterface.Extensions.Widget.SetValue(
       { Value: selected + 1, WidgetId: config.panelId + '-siteGroup' });
   }
-  
+
 }
 
 function askForPIN() {
@@ -337,7 +338,7 @@ async function createPanel() {
                   </Panel>
                 </Extensions>`;
   await xapi.Command.UserInterface.Extensions.Panel.Save({ PanelId: panelId }, panel)
-  .catch(error=>console.log(`Unable to save panel [${panelId}] - `, e.Message))
+    .catch(error => console.log(`Unable to save panel [${panelId}] - `, e.Message))
 }
 
 // Here we create main initial buttons which can open the hidden panel
@@ -359,7 +360,7 @@ async function createButtons() {
                   </Panel>
                 </Extensions>`;
     await xapi.Command.UserInterface.Extensions.Panel.Save({ PanelId: panelId + location }, panel)
-    .catch(error=>console.log(`Unable to save panel [${panelId}] - `, e.Message))
+      .catch(error => console.log(`Unable to save panel [${panelId}] - `, e.Message))
   })
 }
 

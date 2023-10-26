@@ -55,6 +55,7 @@ const config = {
   panelId: 'kioskcontrols'
 }
 
+
 /*********************************************************
  * Do not change below
 **********************************************************/
@@ -79,7 +80,7 @@ async function main() {
   xapi.Config.UserInterface.Assistant.Mode.set(config.disableAssistant ? 'Off' : 'On');
   xapi.Config.Audio.Ultrasound.MaxVolume.set(config.disableUltrasound ? 0 : 70);
 
-  // Listen for all toggle events
+  // Subscribe to Widget and Panel Click events
   xapi.Event.UserInterface.Extensions.Widget.Action.on(processWidgets);
   xapi.Event.UserInterface.Extensions.Panel.Clicked.on(event => {
     if (!event.PanelId.startsWith(config.panelId)) return;
@@ -96,7 +97,10 @@ async function main() {
   xapi.Event.UserInterface.Message.TextInput.Response.on(processTextResponse)
 
   // Monitor Kiosk settings change to keep the UI updated
-  xapi.Config.UserInterface.Kiosk.Mode.on(syncUI);
+  xapi.Config.UserInterface.Kiosk.Mode.on(state => {
+
+    syncUI();
+  });
   xapi.Config.UserInterface.Kiosk.URL.on(syncUI);
 
   // Monitor the response to the warning prompt when no URL is set
@@ -104,7 +108,7 @@ async function main() {
 
   xapi.Status.Standby.State.on(async state => {
     console.log('Standby State Changed to: ', state)
-    if(await kioskEnabled()) return; // Take no action if kiosk mode is already enabled.
+    if (await kioskEnabled()) return; // Take no action if kiosk mode is already enabled.
     if (state === 'EnteringStandby') {
       if (config.autoCleanupOnStandby) performRoomClean();
       if (config.autoEnableKioskOnStandby) setKioskMode('On')
@@ -119,11 +123,11 @@ async function main() {
 
   });
 
+  // Subscribe to Room Clean up event for logging
+  xapi.Event.RoomCleanup.Complete
+    .on(value => console.log('Cleanup result', value));
 
-  xapi.Event.RoomCleanup.Complete.on(value => {
-    console.log('Cleanup result', value)
-  });
-
+  // Subscribe to Standby events for logging
   xapi.Event.Standby.SecondsToStandby
     .on(value => console.log('Seconds to Standby:', value));
 
@@ -164,7 +168,8 @@ async function getKioskUrl() {
   return await xapi.Config.UserInterface.Kiosk.URL.get();
 }
 
-async function setKioskURL(url) {
+function setKioskURL(url) {
+  console.log('Setting Kiosk URL to: ', url)
   xapi.Config.UserInterface.Kiosk.URL.set(url);
 }
 
@@ -177,6 +182,8 @@ async function toggleKiosk() {
   if (state == 'On') {
     setKioskMode('Off')
   } else {
+    if (config.autoCleanupOnHalfwake || config.autoCleanupOnStandby) performRoomClean();
+    if (config.autoDisableStandby) setStandbyControl('Off')
     setKioskMode('On')
   }
 }
@@ -229,9 +236,7 @@ function processTextResponse(event) {
 // This fucntion will set the new Kiosk URL
 async function setUrl(selection) {
   const url = config.kioskUrls[selection].url;
-  console.log('Setting Kiosk URL set to: ' + url);
   setKioskURL(url);
-  //syncUI();
 }
 
 function compareURLs(a, b) {
@@ -253,7 +258,6 @@ async function syncUI() {
     xapi.Command.UserInterface.Extensions.Widget.SetValue(
       { Value: selected + 1, WidgetId: config.panelId + '-siteGroup' });
   }
-
 }
 
 function askForPIN() {
@@ -287,7 +291,7 @@ function processWidgets(event) {
 }
 
 
-// Here we create main hidden panel
+// This function creates the hidden main panel
 async function createPanel() {
   const button = config.button;
   const sites = config.kioskUrls;
@@ -341,7 +345,7 @@ async function createPanel() {
     .catch(error => console.log(`Unable to save panel [${panelId}] - `, e.Message))
 }
 
-// Here we create main initial buttons which can open the hidden panel
+// This function creates initial buttons which can open the hidden panel
 async function createButtons() {
   const button = config.button;
   const panelId = config.panelId;
@@ -367,10 +371,11 @@ async function createButtons() {
 // This function finds the place order of the panel if it was saved previously
 async function panelOrder(panelId) {
   const list = await xapi.Command.UserInterface.Extensions.List({ ActivityType: 'Custom' });
+  if (!list.hasOwnProperty('Extensions')) return -1
   if (!list.Extensions.hasOwnProperty('Panel')) return -1
-  if (list.Extensions.Panel.length == 0) return -1;
+  if (list.Extensions.Panel.length == 0) return -1
   for (let i = 0; i < list.Extensions.Panel.length; i++) {
     if (list.Extensions.Panel[i].PanelId == panelId) return list.Extensions.Panel[i].Order;
   }
-  return -1;
+  return -1
 }

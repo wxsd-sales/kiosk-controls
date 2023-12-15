@@ -6,7 +6,7 @@
  *                    	Cisco Systems
  * 
  * Version: 2-0-1
- * Released: 12/15/23
+ * Released: 10/20/23
  * 
  * This macro gives you the ability to enable kiosk mode from the touch inteface
  * of your your Webex Devices. If you have a paired Touch 10 or Webex Navigator
@@ -54,7 +54,6 @@ const config = {
   autoDisableStandby: true,
   panelId: 'kioskcontrols'
 }
-
 
 /*********************************************************
  * Do not change below

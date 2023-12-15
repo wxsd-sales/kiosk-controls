@@ -5,7 +5,7 @@
  *                    	wimills@cisco.com
  *                    	Cisco Systems
  * 
- * Version: 2-0-0
+ * Version: 2-0-1
  * Released: 10/20/23
  * 
  * This macro gives you the ability to enable kiosk mode from the touch inteface
@@ -82,25 +82,20 @@ async function main() {
 
   // Subscribe to Widget and Panel Click events
   xapi.Event.UserInterface.Extensions.Widget.Action.on(processWidgets);
-  xapi.Event.UserInterface.Extensions.Panel.Clicked.on(event => {
+  xapi.Event.UserInterface.Extensions.Panel.Clicked.on(async event => {
     if (!event.PanelId.startsWith(config.panelId)) return;
-    kioskEnabled()
-      .then(enabled => {
-        if (enabled) {
-          askForPIN();
-        } else {
-          xapi.Command.UserInterface.Extensions.Panel.Open({ PanelId: config.panelId });
-        }
-      })
+    const inKioskMode = await kioskEnabled();
+    if (inKioskMode) {
+      askForPIN();
+    } else {
+      xapi.Command.UserInterface.Extensions.Panel.Open({ PanelId: config.panelId });
+    }
   });
 
   xapi.Event.UserInterface.Message.TextInput.Response.on(processTextResponse)
 
   // Monitor Kiosk settings change to keep the UI updated
-  xapi.Config.UserInterface.Kiosk.Mode.on(state => {
-
-    syncUI();
-  });
+  xapi.Config.UserInterface.Kiosk.Mode.on(syncUI);
   xapi.Config.UserInterface.Kiosk.URL.on(syncUI);
 
   // Monitor the response to the warning prompt when no URL is set
@@ -108,8 +103,9 @@ async function main() {
 
   xapi.Status.Standby.State.on(async state => {
     console.log('Standby State Changed to: ', state)
-    if (await kioskEnabled()) return; // Take no action if kiosk mode is already enabled.
-    if (state === 'EnteringStandby') {
+    if (await kioskEnabled()) return // Take no action if kiosk mode is already enabled.
+
+    if (state === 'EnteringStandby' || state === 'Standby') {
       if (config.autoCleanupOnStandby) performRoomClean();
       if (config.autoEnableKioskOnStandby) setKioskMode('On')
       if (config.autoDisableStandby) setStandbyControl('Off')
@@ -125,14 +121,14 @@ async function main() {
 
   // Subscribe to Room Clean up event for logging
   xapi.Event.RoomCleanup.Complete
-    .on(value => console.log('Cleanup result', value));
+    .on(value => console.log('Cleanup Result:', value.Result));
 
   // Subscribe to Standby events for logging
   xapi.Event.Standby.SecondsToStandby
-    .on(value => console.log('Seconds to Standby:', value));
+    .on(value => console.log('Seconds To Standby:', value));
 
   xapi.Event.Standby.Reset
-    .on(value => console.log('Standby Reset Event', value));
+    .on(value => console.log('Standby Reset Event:', value));
 
 }
 
@@ -149,12 +145,12 @@ function kioskEnabled() {
 }
 
 function setKioskMode(mode) {
-  console.log('Setting Kiosk Mode to: ', mode);
+  console.log('Setting Kiosk Mode To:', mode);
   xapi.Config.UserInterface.Kiosk.Mode.set(mode);
 }
 
 function setStandbyControl(mode) {
-  console.log('Setting Standby Control to: ', mode);
+  console.log('Setting Standby Control To:', mode);
   xapi.Config.Standby.Control.set(mode);
   if (mode === 'Off') xapi.Command.Standby.Deactivate();
 }
@@ -169,14 +165,11 @@ async function getKioskUrl() {
 }
 
 function setKioskURL(url) {
-  console.log('Setting Kiosk URL to: ', url)
+  console.log('Setting Kiosk URL To:', url)
   xapi.Config.UserInterface.Kiosk.URL.set(url);
 }
 
 
-// This function will toggle kiosk mode
-// It will also check a Kiosk URL is set before enabling and
-// warn the user of this case
 async function toggleKiosk() {
   const state = await xapi.Config.UserInterface.Kiosk.Mode.get()
   if (state == 'On') {
@@ -188,17 +181,6 @@ async function toggleKiosk() {
   }
 }
 
-// This function is ued to diaplay a warning prompt when no Kiosk URL is set
-function warnUser() {
-  xapi.Command.UserInterface.Message.Prompt.Display(
-    {
-      Title: config.button.name,
-      Text: 'Warning: No Kiosk URL configured. The device will show as Out of Service. Are you sure you want to enable Kiosk Mode?',
-      FeedbackId: 'kiosk_warning',
-      "Option.1": "Yes",
-      "Option.2": "No"
-    });
-}
 
 // Here we handle the user response to the warning message
 function warningResponse(response) {
@@ -272,11 +254,9 @@ function askForPIN() {
   });
 }
 
-
 // This function monitors the UI events
 function processWidgets(event) {
   if (!event.WidgetId.startsWith(config.panelId)) return;
-  console.log(event)
   const widget = event.WidgetId.split('-').pop();
   switch (widget) {
     case 'siteGroup':
@@ -364,7 +344,7 @@ async function createButtons() {
                   </Panel>
                 </Extensions>`;
     await xapi.Command.UserInterface.Extensions.Panel.Save({ PanelId: panelId + location }, panel)
-      .catch(error => console.log(`Unable to save panel [${panelId}] - `, e.Message))
+      .catch(error => console.log(`Unable to save panel [${panelId}] - `, error.Message))
   })
 }
 

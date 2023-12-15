@@ -6,7 +6,7 @@
  *                    	Cisco Systems
  * 
  * Version: 2-0-1
- * Released: 10/20/23
+ * Released: 12/15/23
  * 
  * This macro gives you the ability to enable kiosk mode from the touch inteface
  * of your your Webex Devices. If you have a paired Touch 10 or Webex Navigator
@@ -74,8 +74,7 @@ async function main() {
   xapi.Config.WebEngine.Mode.set('On');
   xapi.Config.WebEngine.Features.WebGL.set('On');
 
-
-  // Disable/enable recommend features
+  // Disable/enable recommended features
   xapi.Config.UserInterface.SettingsMenu.Mode.set(config.disableSettings ? 'Locked' : 'Unlocked');
   xapi.Config.UserInterface.Assistant.Mode.set(config.disableAssistant ? 'Off' : 'On');
   xapi.Config.Audio.Ultrasound.MaxVolume.set(config.disableUltrasound ? 0 : 70);
@@ -84,26 +83,30 @@ async function main() {
   xapi.Event.UserInterface.Extensions.Widget.Action.on(processWidgets);
   xapi.Event.UserInterface.Extensions.Panel.Clicked.on(async event => {
     if (!event.PanelId.startsWith(config.panelId)) return;
-    const inKioskMode = await kioskEnabled();
+    const inKioskMode = await getKioskMode();
     if (inKioskMode) {
+      console.log(`[${config.button.name}] Clicked - Kiosk Mode Enabled - Prompting For PIN`)
       askForPIN();
     } else {
+      console.log(`[${config.button.name}] Clicked - Kiosk Mode Disabled - Opening Kiosk Control Panel`)
       xapi.Command.UserInterface.Extensions.Panel.Open({ PanelId: config.panelId });
     }
   });
 
+  // Subscribe to Text Inputs and Prompt Responses
   xapi.Event.UserInterface.Message.TextInput.Response.on(processTextResponse)
+  xapi.Event.UserInterface.Message.Prompt.Response.on(warningResponse);
 
   // Monitor Kiosk settings change to keep the UI updated
   xapi.Config.UserInterface.Kiosk.Mode.on(syncUI);
   xapi.Config.UserInterface.Kiosk.URL.on(syncUI);
 
-  // Monitor the response to the warning prompt when no URL is set
-  xapi.Event.UserInterface.Message.Prompt.Response.on(warningResponse);
+  
 
   xapi.Status.Standby.State.on(async state => {
     console.log('Standby State Changed to: ', state)
-    if (await kioskEnabled()) return // Take no action if kiosk mode is already enabled.
+    const inKioskMode = await getKioskMode();
+    if (!inKioskMode) return // Take no action if kiosk mode is already enabled.
 
     if (state === 'EnteringStandby' || state === 'Standby') {
       if (config.autoCleanupOnStandby) performRoomClean();
@@ -119,28 +122,23 @@ async function main() {
 
   });
 
-  // Subscribe to Room Clean up event for logging
+  // Subscribe to Room Clean and Standby Events for Debug Logging
   xapi.Event.RoomCleanup.Complete
-    .on(value => console.log('Cleanup Result:', value.Result));
-
-  // Subscribe to Standby events for logging
+    .on(value => console.debug('Cleanup Result:', value.Result));
   xapi.Event.Standby.SecondsToStandby
-    .on(value => console.log('Seconds To Standby:', value));
-
+    .on(value => console.debug('Seconds To Standby:', value));
   xapi.Event.Standby.Reset
-    .on(value => console.log('Standby Reset Event:', value));
-
+    .on(value => console.debug('Standby Reset Event:', value));
 }
 
 main();
-
 
 /*********************************************************
  * Below are the function which this macro uses
 **********************************************************/
 
 
-function kioskEnabled() {
+function getKioskMode() {
   return xapi.Config.UserInterface.Kiosk.Mode.get().then(result => result === 'On')
 }
 
@@ -203,13 +201,13 @@ function processTextResponse(event) {
   switch (responseType) {
     case 'pin':
       if (event.Text == config.pin) {
-        console.log('PIN valid - opening panel');
+        console.log('Valid PIN Entered - Opening Kiosk Control Panel');
         xapi.Command.UserInterface.Extensions.Panel.Open({ PanelId: config.panelId });
         return;
       } else {
-        console.log('Invalid PIN - notify user');
+        console.log('Invalid PIN Entered - Displaying Invalid PIN Alert');
         xapi.Command.UserInterface.Message.Alert.Display(
-          { Duration: 5, Text: 'The PIN entered was invalid, please try again', Title: 'Invalid PIN' });
+          { Duration: 5, Text: 'The PIN entered was invalid<br> please try again', Title: 'Invalid PIN' });
       }
       break;
   }
@@ -243,7 +241,6 @@ async function syncUI() {
 }
 
 function askForPIN() {
-  console.log('Asking for PIN input')
   xapi.Command.UserInterface.Message.TextInput.Display({
     FeedbackId: config.panelId + '-pin',
     InputType: 'PIN',
@@ -285,10 +282,9 @@ async function createPanel() {
     siteGroup = siteGroup.concat(`<Value><Key>${i + 1}</Key><Name>${site.text}</Name></Value>`);
   })
   siteGroup = siteGroup.concat('</ValueSpace></Widget>');
+  
   const orderNum = await panelOrder(panelId)
-  const kioskModeEanabled = await kioskEnabled();
-
-  console.log('Kiosk Mode Enabled: ', kioskModeEanabled);
+  const inKioskMode = await getKioskMode();
 
   const order = (orderNum != -1) ? `<Order>${orderNum}</Order>` : '';
   const panel = `<Extensions>
@@ -312,7 +308,7 @@ async function createPanel() {
                         <Name>Kiosk Mode</Name>
                         <Widget>
                           <WidgetId>${panelId}-toggle</WidgetId>
-                          <Name>${kioskModeEanabled ? 'Disable Kiosk Mode' : 'Enable Kiosk Mode'}</Name>
+                          <Name>${inKioskMode ? 'Disable Kiosk Mode' : 'Enable Kiosk Mode'}</Name>
                           <Type>Button</Type>
                           <Options>size=2</Options>
                       </Widget>
